@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>유튜브 다운로더 - 초고속 YouTube 동영상 및 음원 다운로드</title>
+    <meta name="description" content="간단하고 세련된 디자인으로 유튜브 동영상(FHD/4K) 및 MP3 고음질 음원을 멀티스레드로 빠르게 다운로드하세요.">
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dark-mode" id="app-body">
+    <!-- Background Glow Blobs -->
+    <div class="glow-blob glow-1"></div>
+    <div class="glow-blob glow-2"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="logo-icon">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96 29 29 0 0 0 .46-5.29 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+                </span>
+                <h1 class="logo-title">YouTube <span class="gradient-text">Downloader</span></h1>
+            </div>
+            
+            <div class="header-actions">
+                <!-- FFmpeg Warning Badge -->
+                <div id="ffmpeg-warning" class="warning-badge hidden" title="FFmpeg이 설치되지 않아 고화질 다운로드 및 음원 추출이 제한됩니다. 클릭하여 설치 안내를 확인하세요.">
+                    <span class="warning-icon">⚠️</span>
+                    <span class="warning-text">FFmpeg 미설치</span>
+                </div>
+                
+                <button id="theme-toggle" class="icon-button" aria-label="테마 전환" title="테마 전환">
+                    <!-- Sun Icon (Light Mode) -->
+                    <svg class="sun-icon hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <!-- Moon Icon (Dark Mode) -->
+                    <svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
+                
+                <button id="open-settings-btn" class="icon-button" aria-label="설정 열기" title="설정">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- URL Input Card -->
+            <section class="card input-card">
+                <div class="card-body">
+                    <h2 class="section-title">다운로드할 영상 주소 입력</h2>
+                    <p class="section-desc">유튜브 비디오, 쇼츠, 플레이리스트 링크 주소를 입력하세요.</p>
+                    
+                    <form id="url-form" class="url-input-form" onsubmit="return false;">
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                            </span>
+                            <input type="text" id="youtube-url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" required>
+                            <button type="button" id="paste-btn" class="text-button" title="클립보드에서 붙여넣기">붙여넣기</button>
+                        </div>
+                        <button type="submit" id="analyze-btn" class="primary-button btn-glow">
+                            <span class="btn-text">분석 및 추가</span>
+                            <span class="spinner hidden"></span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Download Queue Card -->
+            <section class="card queue-card">
+                <div class="card-header">
+                    <h2 class="card-title">다운로드 대기열 (<span id="queue-count">0</span>)</h2>
+                    <div class="queue-actions">
+                        <button id="open-folder-btn" class="secondary-button" title="저장된 폴더 열기">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                            폴더 열기
+                        </button>
+                        <button id="clear-completed-btn" class="secondary-button" title="완료된 항목 지우기">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            기록 지우기
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="queue-empty" class="empty-state">
+                        <div class="empty-icon">
+                            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        </div>
+                        <p class="empty-text">대기열이 비어 있습니다. 위 입력창에 유튜브 주소를 추가해보세요!</p>
+                    </div>
+                    
+                    <div id="queue-list" class="queue-list hidden">
+                        <!-- Queue items will be dynamically generated here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Format Selection Modal -->
+    <div id="format-modal" class="modal-overlay hidden">
+        <div class="modal-container glass">
+            <button id="close-modal-btn" class="modal-close" aria-label="닫기">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div class="modal-header">
+                <h3 class="modal-title">다운로드 형식 선택</h3>
+            </div>
+            <div class="modal-body">
+                <div class="video-info-summary">
+                    <img id="modal-thumbnail" src="" alt="Thumbnail" class="modal-thumbnail">
+                    <div class="modal-info-details">
+                        <h4 id="modal-video-title" class="video-title">동영상 제목</h4>
+                        <p id="modal-video-channel" class="video-channel">채널 이름</p>
+                        <p id="modal-video-duration" class="video-duration">재생시간: 00:00</p>
+                    </div>
+                </div>
+                
+                <div class="tab-container">
+                    <div class="tab-headers">
+                        <button class="tab-button active" data-tab="tab-video">비디오 (MP4)</button>
+                        <button class="tab-button" data-tab="tab-audio">오디오 (MP3 / M4A)</button>
+                    </div>
+                    
+                    <div class="tab-contents">
+                        <!-- Video Options Tab -->
+                        <div id="tab-video" class="tab-pane active">
+                            <div class="options-list" id="video-options-list">
+                                <!-- Dynamic formats go here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Audio Options Tab -->
+                        <div id="tab-audio" class="tab-pane">
+                            <div class="options-list" id="audio-options-list">
+                                <!-- Dynamic audio formats go here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="add-to-queue-btn" class="primary-button full-width">선택한 형식 다운로드 추가</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Playlist Import Modal -->
+    <div id="playlist-modal" class="modal-overlay hidden">
+        <div class="modal-container glass">
+            <button id="close-playlist-btn" class="modal-close" aria-label="닫기">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div class="modal-header">
+                <h3 class="modal-title">재생목록 분석 완료</h3>
+            </div>
+            <div class="modal-body">
+                <div class="playlist-info">
+                    <div class="playlist-icon">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    </div>
+                    <div>
+                        <h4 id="playlist-title" class="playlist-title-text">재생목록 이름</h4>
+                        <p class="playlist-desc"><span id="playlist-video-count">0</span>개의 동영상이 발견되었습니다. 아래 다운로드할 항목들을 확인하세요.</p>
+                    </div>
+                </div>
+
+                <div class="playlist-actions-row">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="playlist-select-all" checked>
+                        <span class="checkmark"></span>
+                        전체 선택
+                    </label>
+                    <div class="playlist-format-select">
+                        <select id="playlist-default-format">
+                            <option value="best_video">비디오 고화질 (MP4)</option>
+                            <option value="bestaudio_mp3">오디오만 추출 (MP3)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="playlist-items-container" id="playlist-items-list">
+                    <!-- Dynamic playlist items with checkboxes -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="add-playlist-btn" class="primary-button full-width">선택한 <span id="selected-playlist-count">0</span>개 동영상 대기열 추가</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Drawer/Modal -->
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-container glass settings-modal-container">
+            <button id="close-settings-btn" class="modal-close" aria-label="닫기">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div class="modal-header">
+                <h3 class="modal-title">설정</h3>
+            </div>
+            <div class="modal-body">
+                <!-- Save Path Setting -->
+                <div class="setting-group">
+                    <label for="save-path-input" class="setting-label">다운로드 저장 경로</label>
+                    <div class="setting-row">
+                        <input type="text" id="save-path-input" readonly>
+                        <button id="change-path-btn" class="secondary-button">변경...</button>
+                    </div>
+                </div>
+
+                <!-- Concurrent Limit Setting -->
+                <div class="setting-group">
+                    <label for="max-concurrent-select" class="setting-label">동시 다운로드 제한 개수</label>
+                    <div class="setting-desc">동시에 다운로드할 작업의 개수를 제한하여 네트워크 병목을 방지합니다.</div>
+                    <select id="max-concurrent-select" class="setting-select">
+                        <option value="1">1 개</option>
+                        <option value="2" selected>2 개 (권장)</option>
+                        <option value="3">3 개</option>
+                        <option value="4">4 개</option>
+                        <option value="5">5 개</option>
+                    </select>
+                </div>
+
+                <!-- Default Resolution -->
+                <div class="setting-group">
+                    <label for="default-format-select" class="setting-label">기본 포맷 설정</label>
+                    <select id="default-format-select" class="setting-select">
+                        <option value="video_high">고화질 비디오 (FHD/4K)</option>
+                        <option value="video_medium">일반화질 비디오 (720p/480p)</option>
+                        <option value="audio_mp3">오디오 최고 품질 (MP3)</option>
+                    </select>
+                </div>
+
+                <!-- Update core package -->
+                <div class="setting-group info-group">
+                    <h4 class="info-group-title">프로그램 및 코어 상태</h4>
+                    <div class="info-row">
+                        <span>yt-dlp 버퍼 엔진</span>
+                        <button id="update-ytdlp-btn" class="secondary-button btn-small">
+                            <span class="btn-text">엔진 강제 업데이트</span>
+                            <span class="spinner spinner-small hidden"></span>
+                        </button>
+                    </div>
+                    <div class="info-row">
+                        <span>FFmpeg 상태</span>
+                        <span id="ffmpeg-status-text" class="status-indicator">확인 중...</span>
+                    </div>
+                </div>
+
+                <!-- FFmpeg Install Guide (Hidden by default, shown if FFmpeg missing) -->
+                <div id="ffmpeg-install-guide" class="ffmpeg-guide-box hidden">
+                    <h5 class="guide-title">💡 FFmpeg 설치 안내 (고화질/음원추출에 필수)</h5>
+                    <p class="guide-text">macOS 환경에서 FFmpeg을 설치하려면 터미널을 열고 다음 명령어를 실행하십시오:</p>
+                    <code class="guide-code">brew install ffmpeg</code>
+                    <p class="guide-sub-text">설치가 완료된 후 프로그램을 재시작하거나 설정 창을 닫아주세요.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-settings-btn" class="primary-button full-width">설정 저장 및 닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert / Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
